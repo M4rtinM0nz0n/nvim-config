@@ -46,7 +46,7 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 
 --[[ NOTE: with this I can disable arrows and thus, force user to use hjkl]]
 
-vim.keymap.set('n', '<left>', '<cmd>echo "That\'s not The NeoVim Way... use h"<CR>')
+vim.keymap.set('n', '<left>', '<cmd>echo "That\'s not The NeoVim Way... Use h"<CR>')
 vim.keymap.set('n', '<right>', '<cmd>echo "That\'s not The NeoVim Way... Use l"<CR>')
 vim.keymap.set('n', '<up>', '<cmd>echo "That\'s not The NeoVim Way... Use k"<CR>')
 vim.keymap.set('n', '<down>', '<cmd>echo "That\'s not The NeoVim Way... Use j"<CR>')
