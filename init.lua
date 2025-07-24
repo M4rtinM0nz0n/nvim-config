@@ -1,7 +1,7 @@
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
-vim.cmd 'luafile ~/.config/nvim/lua/colors/lub.lua'
+vim.cmd 'luafile ~/.config/nvim/lua/colors/liebe.lua'
 
 vim.g.have_nerd_font = true
 vim.o.number = true
@@ -46,10 +46,10 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 
 --[[ NOTE: with this I can disable arrows and thus, force user to use hjkl]]
 
-vim.keymap.set('n', '<left>', '<cmd>echo "That\'s not The NeoVim Way... Use h"<CR>')
-vim.keymap.set('n', '<right>', '<cmd>echo "That\'s not The NeoVim Way... Use l"<CR>')
-vim.keymap.set('n', '<up>', '<cmd>echo "That\'s not The NeoVim Way... Use k"<CR>')
-vim.keymap.set('n', '<down>', '<cmd>echo "That\'s not The NeoVim Way... Use j"<CR>')
+vim.keymap.set('n', '<left>', '<cmd>echo "That\'s not The Vim Way... Use h"<CR>')
+vim.keymap.set('n', '<right>', '<cmd>echo "That\'s not The Vim Way... Use l"<CR>')
+vim.keymap.set('n', '<up>', '<cmd>echo "That\'s not The Vim Way... Use k"<CR>')
+vim.keymap.set('n', '<down>', '<cmd>echo "That\'s not The Vim Way... Use j"<CR>')
 
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
@@ -59,6 +59,8 @@ vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left wind
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+
+vim.keymap.set('i', '<leader>tt', 'Hello World', { desc = 'Write Hello World' })
 
 -- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
 -- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
@@ -109,10 +111,26 @@ require('lazy').setup({
   },
   {
     'akinsho/toggleterm.nvim',
+    version = '*',
+    opts = {
+      direction = 'tab',
+      open_mapping = [[<C-\>]],
+      start_in_insert = true,
+      insert_mappings = true,
+      terminal_mappings = true,
+      persist_size = true,
+      close_on_exit = true,
+      shell = vim.o.shell,
+    },
+    keys = {
+      { '<leader>tt', '<cmd>ToggleTerm<CR>', desc = '[T]oggle [T]erminal' },
+      { mode = 't', '<Esc>', [[<C-\><C-n>]], desc = 'Exit terminal mode' },
+    },
   },
   {
     'tpope/vim-fugitive',
     keys = {
+      { '<leader>' },
       { '<leader>gs', '<cmd>Git status<CR>', desc = '[G]it [A]dd All' },
       { '<leader>ga', '<cmd>Git add .<CR>', desc = '[G]it [A]dd All' },
       { '<leader>gc', ':Git commit -m ""<left>', desc = '[G]it [C]ommit. You must type a message for the commit.' },

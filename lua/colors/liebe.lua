@@ -1,5 +1,5 @@
 vim.o.background = 'dark'
-vim.g.colors_name = 'Mei-Dark-Theme'
+vim.g.colors_name = 'Liebe-Dark-Theme'
 
 local set = vim.api.nvim_set_hl
 
@@ -104,7 +104,7 @@ set(0, 'WhichKeyFloat', { bg = overlay })
 set(0, 'WhichKeyBorder', { fg = subtle, bg = overlay })
 
 -- Other colors like the keys, brackets and so on.
-set(0, '@punctuation.bracket', { fg = eyesBright }) -- Dis is like, Neon Pink
+set(0, '@punctuation.bracket', { fg = eyesBright })
 set(0, '@constructor', { fg = eyes })
 set(0, '@property', { fg = fog }) -- This affects keys
 
