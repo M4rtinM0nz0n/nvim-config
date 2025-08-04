@@ -128,12 +128,59 @@ require('lazy').setup({
     },
   },
   {
+    'goolord/alpha-nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    config = function()
+      local alpha = require 'alpha'
+      local dashboard = require 'alpha.themes.dashboard'
+      dashboard.section.header.val = {
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '  ███████╗███████╗███████╗ ██████╗ ██╗   ██╗██╗███████╗██╗     ',
+        '  ██╔════╝╚══███╔╝██╔════╝██╔═══██╗██║   ██║██║██╔════╝██║     ',
+        '  █████╗    ███╔╝ █████╗  ██║   ██║██║   ██║██║█████╗  ██║     ',
+        '  ██╔══╝   ███╔╝  ██╔══╝  ██║▄▄ ██║██║   ██║██║██╔══╝  ██║     ',
+        '  ███████╗███████╗███████╗╚██████╔╝╚██████╔╝██║███████╗███████╗',
+        '  ╚══════╝╚══════╝╚══════╝ ╚══▀▀═╝  ╚═════╝ ╚═╝╚══════╝╚══════╝',
+      }
+
+      dashboard.section.buttons.val = {
+        dashboard.button('e', '📝    New file', ':ene <BAR> startinsert <CR>'),
+        dashboard.button('f', '🔍    Find file', ':Telescope find_files<CR>'),
+        dashboard.button('r', '⏳    Recent', ':Telescope oldfiles<CR>'),
+        dashboard.button('q', '🏃💨  Quit', ':qa<CR>'),
+      }
+
+      alpha.setup(dashboard.opts)
+    end,
+  },
+  {
+    'linux-cultist/venv-selector.nvim',
+    dependencies = {
+      'neovim/nvim-lspconfig',
+      'nvim-telescope/telescope.nvim',
+    },
+    ops = {
+      name = '.venv',
+      auth_refresh = true,
+    },
+    keys = {
+      { '<leader>vs', '<cmd>VenvSelect<cr>', desc = 'Select Virtual Environment' },
+      { '<leader>vc', '<cmd>VenvSelectCached<cr>', desc = 'Use Previous Virtual Environment' },
+    },
+  },
+  {
     'tpope/vim-fugitive',
     keys = {
       { '<leader>' },
       { '<leader>gs', '<cmd>Git status<CR>', desc = '[G]it [A]dd All' },
       { '<leader>ga', '<cmd>Git add .<CR>', desc = '[G]it [A]dd All' },
       { '<leader>gc', ':Git commit -m ""<left>', desc = '[G]it [C]ommit. You must type a message for the commit.' },
+      { '<leader>gf', '<cmd>Git fetch<CR>', desc = '[G]it [F]etch' },
       { '<leader>gp', '<cmd>Git push<CR>', desc = '[G]it [P]ush' },
       { '<leader>gl', '<cmd>Git log<CR>', desc = '[G]it [L]og' },
     },
@@ -820,7 +867,7 @@ require('lazy').setup({
   ui = {
     -- If you are using a Nerd Font: set icons to an empty table which will use the
     -- default lazy.nvim defined Nerd Font icons, otherwise define a unicode icons table
-    icons = vim.g.have_nerd_font and {} or {
+    icons = vim.g.have_nerd_font and {} --[[or {
       cmd = '⌘',
       config = '🛠',
       event = '📅',
@@ -834,7 +881,7 @@ require('lazy').setup({
       start = '🚀',
       task = '📌',
       lazy = '💤 ',
-    },
+    },--]],
   },
 })
 

@@ -66,7 +66,7 @@ local eyesBright = '#c4a7e7'
 local highlightLow = '#'
 
 -- [[ Selection Background ]]
-local highlightMedium = '#'
+local highlightMedium = '#44415a'
 
 -- [[
 -- Borders
@@ -115,8 +115,8 @@ set(0, '@tag', { fg = shiki })
 set(0, '@tag.builtin', { fg = shiki })
 
 -- Intel
-set(0, 'DiagnosticError', { fg = lub, underline = true })
-set(0, 'DiagnosticError', { fg = lub, sp = mei, undercurl = true })
-set(0, 'DiagnosticWarn', { fg = mei, undercurl = true, sp = '#ECBE7B' })
+set(0, 'DiagnosticError', { fg = lub, sp = lub, underline = true })
+set(0, 'DiagnosticError', { fg = lub, sp = lub, undercurl = false })
+set(0, 'DiagnosticWarn', { fg = mei, sp = mei, undercurl = false })
 set(0, 'DiagnosticInfo', { fg = fog, underline = true })
 set(0, 'DiagnosticHint', { fg = eyes, underline = true })
