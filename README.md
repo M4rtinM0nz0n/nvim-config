@@ -3,7 +3,7 @@
 # I inteligent
 # G reat
 # G lorious
-# E lemental
+# E legant
 # R adiant
 # S uperb
 # PEOPLE
