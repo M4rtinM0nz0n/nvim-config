@@ -34,13 +34,16 @@ vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
 
 vim.o.inccommand = 'split'
 vim.o.cursorline = true
+
 vim.o.scrolloff = 10
 vim.o.confirm = true
 
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+vim.keymap.set('n', 'gd', vim.lsp.buf.definition, { desc = '[G]o to [D]efinition' })
 
 -- Diagnostic keymaps
-vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+vim.keymap.set('n', '<leader>qq', vim.diagnostic.setloclist, { desc = '[Q]uickfix list Open diagnostic' })
+vim.keymap.set('n', '<leader>qc', vim.diagnostic.open_float, { desc = '[Q]uick Open Diagnostic [C]urrent' })
 
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
@@ -98,10 +101,44 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
   end
 end
 
+-- Undo Tree
+vim.keymap.set('n', '<leader>utt', ':UndotreeToggle<CR>', { desc = '[U]ndo[T]ree [T]oggle' })
+
 -- Neo Tree
 vim.keymap.set('n', '<leader>nt', ':Neotree toggle<CR>', { desc = '[N]eo-[T}ree' })
 vim.keymap.set('n', '<leader>nb', ':Neotree buffers toggle<CR>', { desc = '[N]eo-Tree [B]uffers' })
 vim.keymap.set('n', '<leader>ng', ':Neotree git_status toggle<CR>', { desc = '[N]eo-Tree [G]it status' })
+
+-- Working with HTML:
+-- In insert mode: Ctrl-c adds class=""
+vim.keymap.set('i', '<C-c>', 'class=""<Left>', { noremap = true })
+
+-- In normal mode: <leader>tac adds class="" after tag
+vim.keymap.set('n', '<leader>tac', 'i class=""<Left>', { desc = '[T]ag [A]dd [C]lass', noremap = true })
+
+-- Working with JavaScript:
+-- In insert Ctrl c af
+local af_mode = false
+
+vim.keymap.set('i', '<C-c>', function()
+  af_mode = true
+  vim.defer_fn(function()
+    af_mode = false
+  end, 1000)
+  return ''
+end, { expr = true, noremap = true })
+
+vim.keymap.set('i', 'af', function()
+  if af_mode then
+    af_mode = false
+    return 'const arrow = () => {}'
+  else
+    return 'af'
+  end
+end, { expr = true, noremap = true })
+
+-- In normal mode:
+vim.keymap.set('n', '<leader>caf', 'i const arrow = () => {}<Left>', { noremap = true })
 
 ---@type vim.Option
 local rtp = vim.opt.rtp
@@ -110,6 +147,12 @@ rtp:prepend(lazypath)
 -- NOTE: install your plugins here dummy
 require('lazy').setup({
   'NMAC427/guess-indent.nvim',
+  {
+    'ThePrimeagen/vim-be-good',
+  },
+  {
+    'mbbill/undotree',
+  },
   {
     'chentoast/marks.nvim',
     config = function()
@@ -179,14 +222,19 @@ require('lazy').setup({
     end,
   },
   {
+    'nvim-telescope/telescope-file-browser.nvim',
+    dependencies = { 'nvim-telescope/telescope.nvim', 'nvim-lua/plenary.nvim' },
+    config = function()
+      require('telescope').load_extension 'file_browser'
+    end,
+  },
+  {
     'goolord/alpha-nvim',
     dependencies = { 'nvim-tree/nvim-web-devicons' },
     config = function()
       local alpha = require 'alpha'
       local dashboard = require 'alpha.themes.dashboard'
       dashboard.section.header.val = {
-        '',
-        '',
         '',
         '',
         '',
@@ -230,10 +278,10 @@ require('lazy').setup({
       }
 
       dashboard.section.buttons.val = {
-        dashboard.button('a', '     [A]dd file', ':ene <BAR> startinsert <CR>'),
-        dashboard.button('f', '     [F]ind file', ':Telescope find_files<CR>'),
-        dashboard.button('p', '     [P]rojects', ':echo "In development"<CR>'),
-        dashboard.button('n', '     [N]oVim config Files', ':echo "In development"<CR>'),
+        dashboard.button('f', '     [F]ind files', ':Telescope find_files<CR>'),
+        dashboard.button('d', '󰙅     [D]isplay Tree', ':Neotree toggle<CR>'),
+        dashboard.button('n', '     [N]oVim config files', ':Telescope find_files cwd=~/.config/nvim<CR>'),
+        dashboard.button('p', '     [P]rojects', ':Telescope file_browser path=~/Desktop/Projects select_buffer=true<CR>'),
         dashboard.button('q', '󰩈     [Q]uit', ':qa<CR>'),
       }
 
@@ -400,6 +448,30 @@ require('lazy').setup({
   },
 
   -- LSP Plugins
+  {
+    'folke/snacks.nvim',
+    opts = {
+      ---@field easing? snacks.animate.easing|snacks.animate.easing.Fn
+      animate = {
+        ---@type snacks.animate.Duration|number
+        duration = 20, -- ms per step
+        easing = 'linear',
+        fps = 60, -- frames per second. Global setting for all animations
+      },
+    },
+  },
+  ---{
+  ---  'ya2s/nvim-cursorline',
+  ---},
+  {
+    'folke/noice.nvim',
+    opts = {},
+    event = 'VeryLazy',
+    dependencies = {
+      'MunifTanjim/nui.nvim',
+      'rcarriga/nvim-notify',
+    },
+  },
   {
     'folke/lazydev.nvim',
     ft = 'lua',
@@ -731,7 +803,35 @@ require('lazy').setup({
   },
 
   -- Highlight todo, notes, etc in comments
-  { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
+  {
+    'folke/todo-comments.nvim',
+    event = 'VimEnter',
+    dependencies = { 'nvim-lua/plenary.nvim' },
+    opts = {
+      signs = true,
+      keywords = {
+        TODO = { icon = ' ', color = 'info' },
+        HACK = { icon = ' ', color = 'warning' },
+        WARN = { icon = ' ', color = 'warning', alt = { 'WARNING', 'XXX', 'FAILED' } },
+        PERF = { icon = ' ', alt = { 'OPTIM', 'PERFORMANCE', 'OPTIMIZE', 'UPGRADE' } },
+        NOTE = { icon = ' ', color = 'hint', alt = { 'INFO' } },
+        TEST = { icon = '⏲ ', color = 'test', alt = { 'TESTING', 'PASSED' } },
+      },
+
+      highlight = {
+        multiline = true, -- enable multine todo comments
+        multiline_pattern = '^.', -- lua pattern to match the next multiline from the start of the matched keyword
+        multiline_context = 10, -- extra lines that will be re-evaluated when changing a line
+        before = '', -- "fg" or "bg" or empty
+        keyword = 'wide', -- "fg", "bg", "wide", "wide_bg", "wide_fg" or empty. (wide and wide_bg is the same as bg, but will also highlight surrounding characters, wide_fg acts accordingly but with fg)
+        after = 'fg', -- "fg" or "bg" or empty
+        pattern = [[.*<(KEYWORDS)\s*:]], -- pattern or table of patterns, used for highlighting (vim regex)
+        comments_only = true, -- uses treesitter to match keywords in comments only
+        max_line_len = 800, -- ignore lines longer than this
+        exclude = {}, -- list of file types to exclude highlighting
+      },
+    },
+  },
 
   { -- Collection of various small independent plugins/modules
     'echasnovski/mini.nvim',
