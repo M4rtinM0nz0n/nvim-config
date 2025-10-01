@@ -117,8 +117,6 @@ vim.keymap.set('i', '<C-c>', 'class=""<Left>', { noremap = true })
 vim.keymap.set('n', '<leader>tac', 'i class=""<Left>', { desc = '[T]ag [A]dd [C]lass', noremap = true })
 
 -- Working with JavaScript:
--- In insert Ctrl c af
-local af_mode = false
 
 vim.keymap.set('i', '<C-c>', function()
   af_mode = true
@@ -414,13 +412,12 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
 
-      -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
         -- You can pass additional configuration to Telescope to change the theme, layout, etc.
         builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
           prompt_title = 'Search in Current File',
           winblend = 10,
-          previewer = false,
+          previewer = true,
           layout_config = {
             width = 0.6,
             height = 0.5,
@@ -446,23 +443,19 @@ require('lazy').setup({
       end, { desc = '[S]earch [P]rojects' })
     end,
   },
-
-  -- LSP Plugins
   {
     'folke/snacks.nvim',
     opts = {
-      ---@field easing? snacks.animate.easing|snacks.animate.easing.Fn
       animate = {
-        ---@type snacks.animate.Duration|number
-        duration = 20, -- ms per step
+        duration = 20,
         easing = 'linear',
-        fps = 60, -- frames per second. Global setting for all animations
+        fps = 60,
       },
     },
   },
-  ---{
-  ---  'ya2s/nvim-cursorline',
-  ---},
+  {
+    'ya2s/nvim-cursorline',
+  },
   {
     'folke/noice.nvim',
     opts = {},
@@ -597,21 +590,11 @@ require('lazy').setup({
 
       local capabilities = require('blink.cmp').get_lsp_capabilities()
       local servers = {
-        -- pyright = {},
-        -- rust_analyzer = {},
-        -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
-        -- Some languages (like typescript) have entire language plugins that can be useful:
-        --    https://github.com/pmizio/typescript-tools.nvim
-        -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
         html = {},
         cssls = {},
         emmet_ls = {},
         intelephense = {},
         lua_ls = {
-          -- cmd = { ... },
-          -- filetypes = { ... },
-          -- capabilities = {},
           settings = {
             Lua = {
               completion = {
@@ -700,14 +683,15 @@ require('lazy').setup({
         end)(),
         dependencies = {
           -- `friendly-snippets` contains a variety of premade snippets.
+          -- for example, right rafce => [R]eact [A]rrow [F]unction [C]omponennt [E]xport
           --    See the README about individual language/framework/plugin snippets:
           --    https://github.com/rafamadriz/friendly-snippets
-          -- {
-          --   'rafamadriz/friendly-snippets',
-          --   config = function()
-          --     require('luasnip.loaders.from_vscode').lazy_load()
-          --   end,
-          -- },
+          {
+            'rafamadriz/friendly-snippets',
+            config = function()
+              require('luasnip.loaders.from_vscode').lazy_load()
+            end,
+          },
         },
         opts = {},
       },
@@ -745,14 +729,10 @@ require('lazy').setup({
       },
 
       appearance = {
-        -- 'mono' (default) for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
-        -- Adjusts spacing to ensure icons are aligned
-        nerd_font_variant = 'mono',
+        nerd_font_variant = 'Nerd Font Mono',
       },
 
       completion = {
-        -- By default, you may press `<c-space>` to show the documentation.
-        -- Optionally, set `auto_show = true` to show the documentation after a delay.
         documentation = { auto_show = false, auto_show_delay_ms = 500 },
       },
 
@@ -764,42 +744,9 @@ require('lazy').setup({
       },
 
       snippets = { preset = 'luasnip' },
-
-      -- Blink.cmp includes an optional, recommended rust fuzzy matcher,
-      -- which automatically downloads a prebuilt binary when enabled.
-      --
-      -- By default, we use the Lua implementation instead, but you may enable
-      -- the rust implementation via `'prefer_rust_with_warning'`
-      --
-      -- See :h blink-cmp-config-fuzzy for more information
       fuzzy = { implementation = 'lua' },
-
-      -- Shows a signature help window while you type arguments for a function
       signature = { enabled = true },
     },
-  },
-
-  { -- You can easily change to a different colorscheme.
-    -- Change the name of the colorscheme plugin below, and then
-    -- change the command in the config to whatever the name of that colorscheme is.
-    --
-    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    -- 'folke/tokyonight.nvim',
-    --- rose-pine/neovim',
-    -- priority = 1000, -- Make sure to load this before all the other start plugins.
-    -- config = function()
-    ---@diagnostic disable-next-line: missing-fields
-    -- require('rose-pine').setup {
-    -- styles = {
-    -- comments = { italic = false }, -- Disable italics in comments
-    -- },
-    -- }
-
-    -- Load the colorscheme here.
-    -- Like many other themes, this one has different styles, and you could load
-    -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-    -- vim.cmd.colorscheme 'rose-pine'
-    -- end,
   },
 
   -- Highlight todo, notes, etc in comments
@@ -819,16 +766,16 @@ require('lazy').setup({
       },
 
       highlight = {
-        multiline = true, -- enable multine todo comments
-        multiline_pattern = '^.', -- lua pattern to match the next multiline from the start of the matched keyword
-        multiline_context = 10, -- extra lines that will be re-evaluated when changing a line
-        before = '', -- "fg" or "bg" or empty
-        keyword = 'wide', -- "fg", "bg", "wide", "wide_bg", "wide_fg" or empty. (wide and wide_bg is the same as bg, but will also highlight surrounding characters, wide_fg acts accordingly but with fg)
-        after = 'fg', -- "fg" or "bg" or empty
-        pattern = [[.*<(KEYWORDS)\s*:]], -- pattern or table of patterns, used for highlighting (vim regex)
-        comments_only = true, -- uses treesitter to match keywords in comments only
-        max_line_len = 800, -- ignore lines longer than this
-        exclude = {}, -- list of file types to exclude highlighting
+        multiline = true,
+        multiline_pattern = '^.',
+        multiline_context = 10,
+        before = '',
+        keyword = 'wide',
+        after = 'fg',
+        pattern = [[.*<(KEYWORDS)\s*:]],
+        comments_only = true,
+        max_line_len = 800,
+        exclude = {},
       },
     },
   },
@@ -852,22 +799,15 @@ require('lazy').setup({
       require('mini.surround').setup()
 
       -- Simple and easy statusline.
-      --  You could remove this setup call if you don't like it,
-      --  and try some other statusline plugin
       local statusline = require 'mini.statusline'
-      -- set use_icons to true if you have a Nerd Font
-      statusline.setup { use_icons = vim.g.have_nerd_font }
+      statusline.setup { use_icons = true }
 
-      -- You can configure sections in the statusline by overriding their
-      -- default behavior. For example, here we set the section for
-      -- cursor location to LINE:COLUMN
       ---@diagnostic disable-next-line: duplicate-set-field
       statusline.section_location = function()
         return '%2l:%-2v'
       end
 
-      -- ... and there is more!
-      --  Check out: https://github.com/echasnovski/mini.nvim
+      --  https://github.com/echasnovski/mini.nvim
     end,
   },
 
@@ -884,76 +824,27 @@ require('lazy').setup({
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
-    main = 'nvim-treesitter.configs', -- Sets main module to use for opts
-    -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
+    main = 'nvim-treesitter.configs',
     opts = {
       ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'php' },
-      -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
         enable = true,
         -- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.
-        --  If you are experiencing weird indenting issues, add the language to
         --  the list of additional_vim_regex_highlighting and disabled languages for indent.
         additional_vim_regex_highlighting = { 'ruby' },
       },
       indent = { enable = true, disable = { 'ruby' } },
     },
-    -- There are additional nvim-treesitter modules that you can use to interact
-    -- with nvim-treesitter. You should go explore a few and see what interests you:
-    --
-    --    - Incremental selection: Included, see `:help nvim-treesitter-incremental-selection-mod`
-    --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
-    --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
   },
-
-  -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
-  -- init.lua. If you want these files, they are in the repository, so you can just download them and
-  -- place them in the correct locations.
-
-  -- NOTE: Next step on your Neovim journey: Add/Configure additional plugins for Kickstart
-  --
-  --  Here are some example plugins that I've included in the Kickstart repository.
-  --  Uncomment any of the lines below to enable them (you will need to restart nvim).
-  --
-  -- require 'kickstart.plugins.debug',
-  -- require 'kickstart.plugins.indent_line',
-  -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
-
-  -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
-  --    This is the easiest way to modularize your config.
-  --
-  --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  -- { import = 'custom.plugins' },
-  --
-  -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
-  -- Or use telescope!
-  -- In normal mode type `<space>sh` then write `lazy.nvim-plugin`
-  -- you can continue same window with `<space>sr` which resumes last telescope search
 }, {
   ui = {
-    -- If you are using a Nerd Font: set icons to an empty table which will use the
-    -- default lazy.nvim defined Nerd Font icons, otherwise define a unicode icons table
-    icons = vim.g.have_nerd_font and {} --[[or {
-      cmd = '⌘',
-      config = '🛠',
-      event = '📅',
-      ft = '📂',
-      init = '⚙',
-      keys = '🗝',
-      plugin = '🔌',
-      runtime = '💻',
-      require = '🌙',
-      source = '📄',
-      start = '🚀',
-      task = '📌',
-      lazy = '💤 ',
-    },--]],
+    icons = vim.g.have_nerd_font and {},
   },
 })
 
--- The line beneath this is called `modeline`. See `:help modeline`
+-- The line beneath this is called `modeline`, it's basically like, a line at the end of the end (or start) of a file, that set ups some configuration for this specific file.
+-- for example: ts=2 => ts=4 → tabstop in 4 spaces
+-- sw=4 → shiftwidth in 4 spaces
+-- See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
