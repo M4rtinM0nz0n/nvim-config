@@ -73,6 +73,11 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 -- vim.keymap.set('n', '<leader>ga', '<cmd>Git add .<CR>', { desc = '[G]it [A]dd .' })
 -- vim.keymap.set('n', '<leader>gc', '<cmd>Git commit -m ', { desc = '[G]it [C]ommit' })
 
+vim.keymap.set('i', 'jj', '<Esc>')
+vim.keymap.set('i', 'kk', '<Esc>')
+vim.keymap.set('i', 'jk', '<Esc>')
+vim.keymap.set('i', 'kj', '<Esc>')
+
 local function insert_one_char()
   local char = vim.fn.nr2char(vim.fn.getchar())
   local row, col = unpack(vim.api.nvim_win_get_cursor(0))
@@ -279,7 +284,11 @@ require('lazy').setup({
         dashboard.button('f', '     [F]ind files', ':Telescope find_files<CR>'),
         dashboard.button('d', '󰙅     [D]isplay Tree', ':Neotree toggle<CR>'),
         dashboard.button('n', '     [N]oVim config files', ':Telescope find_files cwd=~/.config/nvim<CR>'),
-        dashboard.button('p', '     [P]rojects', ':Telescope file_browser path=~/Desktop/Projects select_buffer=true<CR>'),
+        dashboard.button(
+          'p',
+          '     [P]rojects',
+          ':Telescope file_browser path=~/Desktop/Projects select_buffer=true<CR>'
+        ),
         dashboard.button('q', '󰩈     [Q]uit', ':qa<CR>'),
       }
 
@@ -531,7 +540,10 @@ require('lazy').setup({
           end
 
           local client = vim.lsp.get_client_by_id(event.data.client_id)
-          if client and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_documentHighlight, event.buf) then
+          if
+            client
+            and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_documentHighlight, event.buf)
+          then
             local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
               buffer = event.buf,
@@ -826,7 +838,20 @@ require('lazy').setup({
     build = ':TSUpdate',
     main = 'nvim-treesitter.configs',
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'php' },
+      ensure_installed = {
+        'bash',
+        'c',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'vim',
+        'vimdoc',
+        'php',
+      },
       auto_install = true,
       highlight = {
         enable = true,
