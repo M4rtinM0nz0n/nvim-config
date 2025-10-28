@@ -41,6 +41,8 @@ vim.o.confirm = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 vim.keymap.set('n', 'gd', vim.lsp.buf.definition, { desc = '[G]o to [D]efinition' })
 
+vim.keymap.set('n', 'K', vim.lsp.buf.hover, { desc = "LSP Hover info (replacing man's K)" })
+
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>qq', vim.diagnostic.setloclist, { desc = '[Q]uickfix list Open diagnostic' })
 vim.keymap.set('n', '<leader>qc', vim.diagnostic.open_float, { desc = '[Q]uick Open Diagnostic [C]urrent' })
@@ -73,6 +75,7 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 -- vim.keymap.set('n', '<leader>ga', '<cmd>Git add .<CR>', { desc = '[G]it [A]dd .' })
 -- vim.keymap.set('n', '<leader>gc', '<cmd>Git commit -m ', { desc = '[G]it [C]ommit' })
 
+-- Fast Escape
 vim.keymap.set('i', 'jj', '<Esc>')
 vim.keymap.set('i', 'kk', '<Esc>')
 vim.keymap.set('i', 'jk', '<Esc>')
@@ -110,7 +113,7 @@ end
 vim.keymap.set('n', '<leader>utt', ':UndotreeToggle<CR>', { desc = '[U]ndo[T]ree [T]oggle' })
 
 -- Neo Tree
-vim.keymap.set('n', '<leader>nt', ':Neotree toggle<CR>', { desc = '[N]eo-[T}ree' })
+vim.keymap.set('n', '<leader>st', ':Neotree toggle<CR>', { desc = '[S]earch Neo-[T}ree' })
 vim.keymap.set('n', '<leader>nb', ':Neotree buffers toggle<CR>', { desc = '[N]eo-Tree [B]uffers' })
 vim.keymap.set('n', '<leader>ng', ':Neotree git_status toggle<CR>', { desc = '[N]eo-Tree [G]it status' })
 
@@ -872,4 +875,5 @@ require('lazy').setup({
 -- for example: ts=2 => ts=4 → tabstop in 4 spaces
 -- sw=4 → shiftwidth in 4 spaces
 -- See `:help modeline`
+
 -- vim: ts=2 sts=2 sw=2 et
