@@ -1,4 +1,4 @@
-# H E L L O
+# Ezequiel's Vim, idk
 # N ice
 # I inteligent
 # G reat

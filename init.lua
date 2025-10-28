@@ -10,7 +10,8 @@ vim.o.relativenumber = true
 vim.o.tabstop = 2
 vim.o.shiftwidth = 2
 vim.o.expandtab = true
-vim.o.mouse = ''
+-- uncomment this if u want to disable the mouse
+-- vim.o.mouse = ''
 
 vim.o.showmode = false
 
@@ -51,10 +52,11 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 
 --[[ NOTE: with this I can disable arrows and thus, force user to use hjkl]]
 
-vim.keymap.set('n', '<left>', '<cmd>echo "That\'s not The Vim Way... Use h"<CR>')
-vim.keymap.set('n', '<right>', '<cmd>echo "That\'s not The Vim Way... Use l"<CR>')
-vim.keymap.set('n', '<up>', '<cmd>echo "That\'s not The Vim Way... Use k"<CR>')
-vim.keymap.set('n', '<down>', '<cmd>echo "That\'s not The Vim Way... Use j"<CR>')
+-- uncomment this, if u want to use the vim way
+--vim.keymap.set('n', '<left>', '<cmd>echo "That\'s not The Vim Way... Use h"<CR>')
+--vim.keymap.set('n', '<right>', '<cmd>echo "That\'s not The Vim Way... Use l"<CR>')
+--vim.keymap.set('n', '<up>', '<cmd>echo "That\'s not The Vim Way... Use k"<CR>')
+--vim.keymap.set('n', '<down>', '<cmd>echo "That\'s not The Vim Way... Use j"<CR>')
 
 vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
