@@ -49,6 +49,16 @@ When you open nvim, you'll be received by the dashboard, in which, in which, you
     - configure it in the init.lua, otherwise it'll be on `~/Desktop/Projects/`
 - 'q'   -> To (Q)uit
 
+| Column1 | Column2 | Column3 |
+| --------------- | --------------- | --------------- |
+| a | [A]dd File | It adds a file and puts you in insert mode. |
+| f | [F]ind Files | It displays Telescope's File Finder. |
+| d | [D]isplay Tree | It displays Neo-Tree. |
+| n | [N]vim Config Files | It displays the Nvim configuration files. |
+| p | [P]rojects | It open's the 'projects' folder. You must configure it in the init.lua, otherwise it'll be on `~/Desktop/Projects/`. |
+| q | [Q]uit | Self explanatory. |
+
+
 ## Telescope
 Telescope has some mappings defined in normal mode
 | Combination | Result |
