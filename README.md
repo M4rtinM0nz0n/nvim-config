@@ -53,22 +53,22 @@ When you open nvim, you'll be received by the dashboard, in which, in which, you
 Telescope has some mappings defined in normal mode
 | Combination | Result |
 | ------------- | -------------- |
-| <leader> sf | [F]ind [F]iles |
-| <leader> sg | [F]ind [G]rep |
-| <leader> sw | [F]ind [W]ord |
-| <leader> sd | [F]ind [D]iagnostics |
-| <leader> sr | [F]ind [R]esume |
-| <leader> so | [F]ind [O]ld files |
-| <leader> /  | Fuzzily Search in Current Buffer |
-| <leader> s/ | [S]earch [/] in Open Files |
-| <leader> sn | [S]earch [N]vim Config Files |
+| \<leader\> sf | [F]ind [F]iles |
+| \<leader\> sg | [F]ind [G]rep |
+| \<leader\> sw | [F]ind [W]ord |
+| \<leader\> sd | [F]ind [D]iagnostics |
+| \<leader\> sr | [F]ind [R]esume |
+| \<leader\> so | [F]ind [O]ld files |
+| \<leader\> /  | Fuzzily Search in Current Buffer |
+| \<leader\> s/ | [S]earch [/] in Open Files |
+| \<leader\> sn | [S]earch [N]vim Config Files |
 
 ## NeoTree
 | Combination | Result | Description |
 | ------------- | -------------- | -------------- |
-| <leader> st | [S]earch Neo-[T]ree | Displays The NeoTree File Browser |
-| <leader> nb | [N]eo [B]uffers | Displays all the current active buffers |
-| <leader> dg | [D]isplay [G]it Status | Displays a NeoTree File Browser which displays the git status of each file |
+| \<leader\> st | [S]earch Neo-[T]ree | Displays The NeoTree File Browser |
+| \<leader\> nb | [N]eo [B]uffers | Displays all the current active buffers |
+| \<leader\> dg | [D]isplay [G]it Status | Displays a NeoTree File Browser which displays the git status of each file |
 
 ## UndoTree
 [Undotree](https://github.com/mbbill/undotree) is a undo history visualizer, it makes it much easier to navigate throughout the undo branches in a more visually attractive way.
@@ -78,7 +78,7 @@ We are still able to go back to "b" even though we undid it and commited a chang
 
 | Combination | Result | Description |
 | ------------- | -------------- | -------------- 
-| <leader> utt | [U]ndo [T]ree [T]oggle | It displays the undotree and changes the focus to it. |
+| \<leader\> utt | [U]ndo [T]ree [T]oggle | It displays the undotree and changes the focus to it. |
 
 ## LSP
 
