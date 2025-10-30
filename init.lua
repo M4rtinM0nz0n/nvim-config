@@ -112,7 +112,7 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 
 -- Undo Tree
-vim.keymap.set('n', '<leader>utt', ':UndotreeToggle<CR>', { desc = '[U]ndo[T]ree [T]oggle' })
+vim.keymap.set('n', '<leader>utt', ':UndotreeToggle<CR>:UndotreeFocus<CR>', { desc = '[U]ndo[T]ree [T]oggle' })
 
 -- Neo Tree
 vim.keymap.set('n', '<leader>st', ':Neotree toggle<CR>', { desc = '[S]earch Neo-[T}ree' })
@@ -145,30 +145,48 @@ vim.keymap.set('i', 'af', function()
   end
 end, { expr = true, noremap = true })
 
+-- This is a function that later will be called by the dashboard when you press P to open the projects folder.
 _G.openProjects = function()
-  local telescope = require 'telescope'
-  telescope.load_extension 'file_browser'
+  local pickers = require 'telescope.pickers'
+  local finders = require 'telescope.finders'
+  local conf = require('telescope.config').values
+  local actions = require 'telescope.actions'
+  local action_state = require 'telescope.actions.state'
 
-  telescope.extensions.file_browser.file_browser {
-    path = '~/Desktop/Projects',
-    prompt_title = 'Select a Project',
-    select_buffer = true,
-    depth = 1,
-    attach_mappings = function(_, map)
-      local actions = require 'telescope.actions'
-      local action_state = require 'telescope.actions.state'
-      map('i', '<CR>', function(prompt_bufnr)
-        local entry = action_state.get_selected_entry()
-        actions.close(prompt_bufnr)
-        local dir = entry.path
-        vim.cmd('cd ' .. dir)
-        print('📂 Moved to project: ' .. dir)
-        require('telescope.builtin').find_files { cwd = dir }
-      end)
-      return true
-    end,
-  }
+  local projects_dir = vim.fn.expand '~/Desktop/Projects'
+  local projects = vim.fn.readdir(projects_dir)
+
+  pickers
+    .new({}, {
+      prompt_title = 'Select a Project',
+      finder = finders.new_table {
+        results = projects,
+        entry_maker = function(entry)
+          return {
+            value = entry,
+            display = '  ' .. entry,
+            ordinal = entry,
+            path = projects_dir .. '/' .. entry,
+          }
+        end,
+      },
+      sorter = conf.generic_sorter {},
+      attach_mappings = function(prompt_bufnr, map)
+        actions.select_default:replace(function()
+          local selection = action_state.get_selected_entry()
+          actions.close(prompt_bufnr)
+
+          local project_path = selection.path
+
+          vim.cmd('cd ' .. vim.fn.fnameescape(project_path))
+          print(' Working directory: ' .. vim.fn.getcwd())
+        end)
+        return true
+      end,
+    })
+    :find()
 end
+
 -- In normal mode:
 vim.keymap.set('n', '<leader>caf', 'i const arrow = () => {}<Left>', { noremap = true })
 
@@ -314,7 +332,7 @@ require('lazy').setup({
         dashboard.button('f', '     [F]ind files', ':Telescope find_files<CR>'),
         dashboard.button('d', '󰙅     [D]isplay Tree', ':Neotree toggle<CR>'),
         dashboard.button('n', '     [N]oVim config files', ':Telescope find_files cwd=~/.config/nvim<CR>'),
-        dashboard.button('p', '     [P]rojects', ':lua openProjects()<CR>'),
+        dashboard.button('p', '     [P]rojects', ':lua _G.openProjects()<CR>'),
         dashboard.button('q', '󰩈     [Q]uit', ':qa<CR>'),
       }
 
@@ -334,18 +352,6 @@ require('lazy').setup({
     keys = {
       { '<leader>vs', '<cmd>VenvSelect<cr>', desc = 'Select Virtual Environment' },
       { '<leader>vc', '<cmd>VenvSelectCached<cr>', desc = 'Use Previous Virtual Environment' },
-    },
-  },
-  {
-    'tpope/vim-fugitive',
-    keys = {
-      { '<leader>' },
-      { '<leader>gs', '<cmd>Git status<CR>', desc = '[G]it [A]dd All' },
-      { '<leader>ga', '<cmd>Git add .<CR>', desc = '[G]it [A]dd All' },
-      { '<leader>gc', ':Git commit -m ""<left>', desc = '[G]it [C]ommit. You must type a message for the commit.' },
-      { '<leader>gf', '<cmd>Git fetch<CR>', desc = '[G]it [F]etch' },
-      { '<leader>gp', '<cmd>Git push<CR>', desc = '[G]it [P]ush' },
-      { '<leader>gl', '<cmd>Git log<CR>', desc = '[G]it [L]og' },
     },
   },
   {
