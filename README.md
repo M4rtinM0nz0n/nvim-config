@@ -41,13 +41,6 @@ cd nerd-fonts
 
 ## Dashboard
 When you open nvim, you'll be received by the dashboard, in which, in which, you'll have a serie of options:
-- 'a'   -> To (A)dd file and put you in insert mode.
-- 'f'   -> To (F)ind files in the *current working directory* (CWD)
-- 'd'   -> To (D)isplay the File Tree
-- 'n'   -> To open (N)vim config files
-- 'p'   -> To open (P)rojects directory
-    - configure it in the init.lua, otherwise it'll be on `~/Desktop/Projects/`
-- 'q'   -> To (Q)uit
 
 | Column1 | Column2 | Column3 |
 | --------------- | --------------- | --------------- |
@@ -61,6 +54,7 @@ When you open nvim, you'll be received by the dashboard, in which, in which, you
 
 ## Telescope
 Telescope has some mappings defined in normal mode
+
 | Combination | Result |
 | ------------- | -------------- |
 | \<leader\> sf | [F]ind [F]iles |

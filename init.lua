@@ -331,7 +331,7 @@ require('lazy').setup({
         dashboard.button('a', '     [A]dd file', ':ene <BAR> startinsert <CR>'),
         dashboard.button('f', '     [F]ind files', ':Telescope find_files<CR>'),
         dashboard.button('d', '󰙅     [D]isplay Tree', ':Neotree toggle<CR>'),
-        dashboard.button('n', '     [N]oVim config files', ':Telescope find_files cwd=~/.config/nvim<CR>'),
+        dashboard.button('n', '     [N]eoVim config files', ':Telescope find_files cwd=~/.config/nvim<CR>'),
         dashboard.button('p', '     [P]rojects', ':lua _G.openProjects()<CR>'),
         dashboard.button('q', '󰩈     [Q]uit', ':qa<CR>'),
       }
