@@ -190,6 +190,8 @@ end
 -- In normal mode:
 vim.keymap.set('n', '<leader>caf', 'i const arrow = () => {}<Left>', { noremap = true })
 
+-- Telescope Configuraiton:
+
 ---@type vim.Option
 local rtp = vim.opt.rtp
 rtp:prepend(lazypath)
@@ -274,8 +276,20 @@ require('lazy').setup({
   {
     'nvim-telescope/telescope-file-browser.nvim',
     dependencies = { 'nvim-telescope/telescope.nvim', 'nvim-lua/plenary.nvim' },
+
     config = function()
-      require('telescope').load_extension 'file_browser'
+      telescope = require('telescope');
+      telescope.setup {
+        defaults = {
+          -- inside of this you put the name of the directories you want to ignore;
+          file_ignore_patterns = {
+            'node_modules',
+            '%.git/',
+          },
+        },
+      }
+
+      telescope.load_extension 'file_browser'
     end,
   },
   {

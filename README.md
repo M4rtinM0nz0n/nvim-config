@@ -42,7 +42,7 @@ cd nerd-fonts
 ## Dashboard
 When you open nvim, you'll be received by the dashboard, in which, in which, you'll have a serie of options:
 
-| Column1 | Column2 | Column3 |
+| Shortcut | Meaning | Description |
 | --------------- | --------------- | --------------- |
 | a | [A]dd File | It adds a file and puts you in insert mode. |
 | f | [F]ind Files | It displays Telescope's File Finder. |
