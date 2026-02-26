@@ -69,14 +69,6 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 -- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
 -- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
 
--- NOTE: this sets keymaps for Neovim
--- NOTE: I've discovered I could set this on Lazy instead.
--- vim.keymap.set('n', '<leader>gs', '<cmd>Git status<CR>', { desc = '[G]it [S]tatus' })
--- vim.keymap.set('n', '<leader>gb', '<cmd>Git blame<CR>', { desc = '[G]it [B]lame' })
--- vim.keymap.set('n', '<leader>gl', '<cmd>Git log<CR>', { desc = '[G]it [L]og' })
--- vim.keymap.set('n', '<leader>ga', '<cmd>Git add .<CR>', { desc = '[G]it [A]dd .' })
--- vim.keymap.set('n', '<leader>gc', '<cmd>Git commit -m ', { desc = '[G]it [C]ommit' })
-
 -- Fast Escape
 vim.keymap.set('i', 'jj', '<Esc>')
 vim.keymap.set('i', 'kk', '<Esc>')
@@ -157,34 +149,34 @@ _G.openProjects = function()
   local projects = vim.fn.readdir(projects_dir)
 
   pickers
-    .new({}, {
-      prompt_title = 'Select a Project',
-      finder = finders.new_table {
-        results = projects,
-        entry_maker = function(entry)
-          return {
-            value = entry,
-            display = '  ' .. entry,
-            ordinal = entry,
-            path = projects_dir .. '/' .. entry,
-          }
+      .new({}, {
+        prompt_title = 'Select a Project',
+        finder = finders.new_table {
+          results = projects,
+          entry_maker = function(entry)
+            return {
+              value = entry,
+              display = '  ' .. entry,
+              ordinal = entry,
+              path = projects_dir .. '/' .. entry,
+            }
+          end,
+        },
+        sorter = conf.generic_sorter {},
+        attach_mappings = function(prompt_bufnr, map)
+          actions.select_default:replace(function()
+            local selection = action_state.get_selected_entry()
+            actions.close(prompt_bufnr)
+
+            local project_path = selection.path
+
+            vim.cmd('cd ' .. vim.fn.fnameescape(project_path))
+            print(' Working directory: ' .. vim.fn.getcwd())
+          end)
+          return true
         end,
-      },
-      sorter = conf.generic_sorter {},
-      attach_mappings = function(prompt_bufnr, map)
-        actions.select_default:replace(function()
-          local selection = action_state.get_selected_entry()
-          actions.close(prompt_bufnr)
-
-          local project_path = selection.path
-
-          vim.cmd('cd ' .. vim.fn.fnameescape(project_path))
-          print(' Working directory: ' .. vim.fn.getcwd())
-        end)
-        return true
-      end,
-    })
-    :find()
+      })
+      :find()
 end
 
 -- In normal mode:
@@ -199,6 +191,14 @@ rtp:prepend(lazypath)
 -- NOTE: install your plugins here dummy
 require('lazy').setup({
   'NMAC427/guess-indent.nvim',
+  {
+    'vyfor/cord.nvim',
+    text = {
+      editing = function(opts)
+        return string.format('Editing %s like a chad', opts.filename)
+      end,
+    }
+  },
   {
     'ThePrimeagen/vim-be-good',
   },
@@ -241,7 +241,7 @@ require('lazy').setup({
     },
     keys = {
       { '<leader>tt', '<cmd>ToggleTerm<CR>', desc = '[T]oggle [T]erminal' },
-      { mode = 't', '<Esc>', [[<C-\><C-n>]], desc = 'Exit terminal mode' },
+      { mode = 't',   '<Esc>',               [[<C-\><C-n>]],              desc = 'Exit terminal mode' },
     },
   },
   {
@@ -373,7 +373,7 @@ require('lazy').setup({
       auth_refresh = true,
     },
     keys = {
-      { '<leader>vs', '<cmd>VenvSelect<cr>', desc = 'Select Virtual Environment' },
+      { '<leader>vs', '<cmd>VenvSelect<cr>',       desc = 'Select Virtual Environment' },
       { '<leader>vc', '<cmd>VenvSelectCached<cr>', desc = 'Use Previous Virtual Environment' },
     },
   },
@@ -449,7 +449,7 @@ require('lazy').setup({
         end,
       },
       { 'nvim-telescope/telescope-ui-select.nvim' },
-      { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
+      { 'nvim-tree/nvim-web-devicons',            enabled = vim.g.have_nerd_font },
     },
     config = function()
       require('telescope').setup {
@@ -537,7 +537,7 @@ require('lazy').setup({
       'mason-org/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
 
-      { 'j-hui/fidget.nvim', opts = {} },
+      { 'j-hui/fidget.nvim',    opts = {} },
 
       'saghen/blink.cmp',
     },
@@ -587,8 +587,8 @@ require('lazy').setup({
 
           local client = vim.lsp.get_client_by_id(event.data.client_id)
           if
-            client
-            and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_documentHighlight, event.buf)
+              client
+              and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_documentHighlight, event.buf)
           then
             local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
@@ -655,11 +655,28 @@ require('lazy').setup({
         lua_ls = {
           settings = {
             Lua = {
+              runtime = {
+                version = 'LuaJIT',
+              },
               completion = {
                 callSnippet = 'Replace',
               },
-              -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
               -- diagnostics = { disable = { 'missing-fields' } },
+              diagnostics = {
+                globals = { 'vim' },
+              },
+              workspace = {
+                library = {
+                  vim.api.nvim_get_runtime_file('', true),
+                  vim.env.VIMRUNTIME,
+                  vim.fn.stdpath 'config',
+                  vim.fn.stdpath 'data' .. '/lazy',
+                },
+                checkThirdParty = false,
+              },
+              telemetry = {
+                enable = false,
+              },
             },
           },
         },
