@@ -193,11 +193,6 @@ require('lazy').setup({
   'NMAC427/guess-indent.nvim',
   {
     'vyfor/cord.nvim',
-    text = {
-      editing = function(opts)
-        return string.format('Editing %s like a chad', opts.filename)
-      end,
-    }
   },
   {
     'ThePrimeagen/vim-be-good',
