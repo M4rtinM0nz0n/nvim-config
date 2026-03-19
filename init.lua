@@ -191,15 +191,10 @@ rtp:prepend(lazypath)
 -- NOTE: install your plugins here dummy
 require('lazy').setup({
   'NMAC427/guess-indent.nvim',
-  {
-    'vyfor/cord.nvim',
-  },
-  {
-    'ThePrimeagen/vim-be-good',
-  },
-  {
-    'mbbill/undotree',
-  },
+  { 'MeanderingProgrammer/render-markdown.nvim' },
+  { 'vyfor/cord.nvim' },
+  { 'ThePrimeagen/vim-be-good' },
+  { 'mbbill/undotree' },
   {
     'chentoast/marks.nvim',
     config = function()
