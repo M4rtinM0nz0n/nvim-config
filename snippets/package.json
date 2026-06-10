@@ -1,0 +1,6 @@
+{
+  "name": "custom-nvim-snippets",
+  "engines": {
+    "vim": "*"
+  }
+}

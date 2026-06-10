@@ -1,0 +1,46 @@
+{
+  "see": {
+    "prefix": "see",
+    "body": "see(${1:df})",
+    "description": "Preview dataframe using see() helper"
+  },
+  "df head": {
+    "prefix": "pdh",
+    "body": "${1:df}.head(${2:10})",
+    "description": "Show head of DataFrame"
+  },
+  "df info": {
+    "prefix": "pdi",
+    "body": "${1:df}.info()",
+    "description": "DataFrame info"
+  },
+  "df describe": {
+    "prefix": "pdd",
+    "body": "${1:df}.describe()",
+    "description": "DataFrame describe"
+  },
+  "read csv": {
+    "prefix": "pdrc",
+    "body": "pd.read_csv('${1:file.csv}')",
+    "description": "Read CSV into DataFrame"
+  },
+  "groupby agg": {
+    "prefix": "pdgb",
+    "body": [
+      "${1:df}.groupby('${2:col}').agg({",
+      "    '${3:col}': ['mean', 'sum']",
+      "})"
+    ],
+    "description": "DataFrame groupby with aggregation"
+  },
+  "merge": {
+    "prefix": "pdmerge",
+    "body": "pd.merge(${1:left}, ${2:right}, on='${3:key}', how='${4:inner}')",
+    "description": "Merge two DataFrames"
+  },
+  "plot": {
+    "prefix": "pdplot",
+    "body": "${1:df}.plot(kind='${2:line}', x='${3:x}', y='${4:y}')",
+    "description": "DataFrame plot"
+  }
+}

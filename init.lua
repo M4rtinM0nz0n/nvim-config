@@ -1,7 +1,10 @@
+-- Ensure ~/.local/bin is on PATH (for pip-installed tools like jupyter-console)
+vim.env.PATH = vim.fn.expand('~/.local/bin') .. ':' .. vim.env.PATH
+
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
-vim.cmd 'luafile ~/.config/nvim/lua/colors/liebe.lua'
+--vim.cmd 'luafile ~/.config/nvim/lua/colors/liebe.lua'
 
 vim.g.have_nerd_font = true
 vim.o.number = true
@@ -93,6 +96,66 @@ vim.api.nvim_create_autocmd('TextYankPost', {
     vim.hl.on_yank()
   end,
 })
+
+-- [[ Jupyter Integration ]]
+
+-- Auto-set vim-slime to target the last opened terminal
+local function set_slime_to_jupyter()
+  vim.schedule(function()
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+      if vim.api.nvim_get_option_value('buftype', { buf = buf }) == 'terminal' then
+        local ok, job_id = pcall(vim.api.nvim_buf_get_var, buf, 'terminal_job_id')
+        if ok and job_id then
+          vim.g.slime_default_config = { jobid = job_id }
+          vim.g.slime_dont_ask_default = 1
+          return
+        end
+      end
+    end
+  end)
+end
+
+-- Open jupyter-console in a persistent bottom split
+local JupyterConsole
+vim.keymap.set('n', '<leader>jj', function()
+  JupyterConsole = JupyterConsole or require('toggleterm.terminal').Terminal:new({
+    cmd = vim.fn.executable('jupyter-console') == 1 and 'jupyter-console' or
+        vim.fn.expand('~/.local/bin/jupyter-console'),
+    direction = 'horizontal',
+    display_name = 'Jupyter',
+    auto_scroll = true,
+    close_on_exit = false,
+  })
+  JupyterConsole:toggle(15) -- 15 lines tall
+  set_slime_to_jupyter()
+end, { desc = '[J]upyter [J]console' })
+
+-- Copy pandas helpers to default register
+vim.keymap.set('n', '<leader>jh', function()
+  local helpers
+  = "import pandas as pd; pd.set_option('display.max_columns', None); pd.set_option('display.width', 200)\n"
+  vim.fn.setreg('"', helpers)
+  vim.notify('Helpers copied -- paste in .py file and send with <leader>jc', vim.log.levels.INFO)
+end, { desc = '[J]upyter [H]elpers' })
+
+-- Insert new cell divider above current line
+vim.keymap.set('n', '<leader>jn', "O<CR># %%<CR><CR><Esc>k", { desc = '[J]upyter [N]ew cell' })
+
+-- vim-slime send cell / line / file / selection
+vim.keymap.set('n', '<leader>jc', '<Plug>SlimeParagraph', { desc = '[J]upyter send [C]ell' })
+vim.keymap.set('n', '<leader>jl', '<Plug>SlimeLine', { desc = '[J]upyter send [L]ine' })
+vim.keymap.set('n', '<leader>jf', '<cmd>%SlimeSend<CR>', { desc = '[J]upyter send [F]ile' })
+vim.keymap.set('v', '<leader>js', '<Plug>SlimeRegion', { desc = '[J]upyter send [S]election' })
+
+-- Restart kernel
+vim.keymap.set('n', '<leader>jk', function()
+  if JupyterConsole and JupyterConsole:is_open() then
+    JupyterConsole:send('%kill')
+    vim.notify('Kernel restart sent', vim.log.levels.INFO)
+  else
+    vim.notify('Open jupyter-console first with <leader>jj', vim.log.levels.WARN)
+  end
+end, { desc = '[J]upyter restart [K]ernel' })
 
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
@@ -191,6 +254,26 @@ rtp:prepend(lazypath)
 -- NOTE: install your plugins here dummy
 require('lazy').setup({
   'NMAC427/guess-indent.nvim',
+  {
+    "rose-pine/neovim",
+    name = "rose-pine",
+    config = function()
+      vim.cmd("colorscheme rose-pine-moon")
+    end,
+  },
+  {
+    "jpalardy/vim-slime",
+    config = function()
+      vim.g.slime_target = "neovim"
+      vim.g.slime_paste_file = "$HOME/.slime_paste"
+    end,
+  },
+  {
+    'GCBallesteros/jupytext.nvim',
+    opts = {
+      auto_save = true,
+    },
+  },
   { 'vyfor/cord.nvim' },
   { 'ThePrimeagen/vim-be-good' },
   { 'mbbill/undotree' },
@@ -357,9 +440,9 @@ require('lazy').setup({
       'neovim/nvim-lspconfig',
       'nvim-telescope/telescope.nvim',
     },
-    ops = {
+    opts = {
       name = '.venv',
-      auth_refresh = true,
+      auto_refresh = true,
     },
     keys = {
       { '<leader>vs', '<cmd>VenvSelect<cr>',       desc = 'Select Virtual Environment' },
@@ -641,6 +724,20 @@ require('lazy').setup({
         cssls = {},
         emmet_ls = {},
         intelephense = {},
+        basedpyright = {
+          settings = {
+            basedpyright = {
+              analysis = {
+                typeCheckingMode = 'standard',
+                autoImportCompletions = true,
+                diagnosticSeverityOverrides = {
+                  reportUnknownMemberType = 'none',
+                  reportMissingTypeStubs = 'none',
+                },
+              },
+            },
+          },
+        },
         lua_ls = {
           settings = {
             Lua = {
@@ -681,6 +778,9 @@ require('lazy').setup({
         'eslint',
         --'stylua',
         'intelephense',
+        'basedpyright',
+        'ruff',
+        'debugpy',
       })
       require('mason-tool-installer').setup {
         ensure_installed = ensure_installed,
@@ -730,6 +830,7 @@ require('lazy').setup({
         lua = {
           --'stylua'
         },
+        python = { 'ruff_format', 'ruff_organize_imports' },
       },
 
       formatters = {
@@ -745,6 +846,74 @@ require('lazy').setup({
         -- },
       },
     },
+  },
+
+  { -- Debugging
+    'mfussenegger/nvim-dap',
+    dependencies = {
+      'rcarriga/nvim-dap-ui',
+      'nvim-neotest/nvim-nio',
+      'mfussenegger/nvim-dap-python',
+    },
+    config = function()
+      local dap = require('dap')
+      local dapui = require('dapui')
+
+      dapui.setup()
+
+      local mason_path = vim.fn.stdpath('data') .. '/mason/packages/debugpy'
+      if vim.fn.isdirectory(mason_path .. '/venv') == 1 then
+        require('dap-python').setup(mason_path .. '/venv/bin/python')
+      else
+        require('dap-python').setup()
+      end
+
+      dap.listeners.before.attach.dapui_config = function()
+        dapui.open()
+      end
+      dap.listeners.before.launch.dapui_config = function()
+        dapui.open()
+      end
+      dap.listeners.before.event_terminated.dapui_config = function()
+        dapui.close()
+      end
+      dap.listeners.before.event_exited.dapui_config = function()
+        dapui.close()
+      end
+
+      vim.keymap.set('n', '<leader>db', dap.toggle_breakpoint, { desc = '[D]ebug [B]reakpoint' })
+      vim.keymap.set('n', '<leader>dc', dap.continue, { desc = '[D]ebug [C]ontinue' })
+      vim.keymap.set('n', '<leader>do', dap.step_over, { desc = '[D]ebug Step [O]ver' })
+      vim.keymap.set('n', '<leader>di', dap.step_into, { desc = '[D]ebug Step [I]nto' })
+      vim.keymap.set('n', '<leader>dO', dap.step_out, { desc = '[D]ebug Step O[u]t' })
+      vim.keymap.set('n', '<leader>dt', dapui.toggle, { desc = '[D]ebug [T]oggle UI' })
+    end,
+  },
+
+  { -- Testing
+    'nvim-neotest/neotest',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'nvim-neotest/nvim-nio',
+      'antoinemadec/FixCursorHold.nvim',
+      'nvim-neotest/neotest-python',
+    },
+    config = function()
+      local neotest = require('neotest')
+      neotest.setup({
+        adapters = {
+          require('neotest-python')({
+            dap = { justMyCode = false },
+            runner = 'pytest',
+          }),
+        },
+      })
+
+      vim.keymap.set('n', '<leader>tr', function() neotest.run.run() end, { desc = '[T]est [R]un nearest' })
+      vim.keymap.set('n', '<leader>tf', function() neotest.run.run(vim.fn.expand('%')) end, { desc = '[T]est Run [F]ile' })
+      vim.keymap.set('n', '<leader>ts', function() neotest.summary.toggle() end, { desc = '[T]est [S]ummary toggle' })
+      vim.keymap.set('n', '<leader>to', function() neotest.output.open({ enter = true, auto_close = true }) end, { desc = '[T]est [O]utput' })
+    end,
   },
 
   { -- Autocompletion
@@ -770,6 +939,9 @@ require('lazy').setup({
             'rafamadriz/friendly-snippets',
             config = function()
               require('luasnip.loaders.from_vscode').lazy_load()
+              require('luasnip.loaders.from_vscode').load {
+                paths = vim.fn.stdpath('config') .. '/snippets',
+              }
             end,
           },
         },
@@ -878,6 +1050,9 @@ require('lazy').setup({
       -- - sr)'  - [S]urround [R]eplace [)] [']
       require('mini.surround').setup()
 
+      -- Auto-close pairs: (), [], {}, "", '', ``
+      require('mini.pairs').setup()
+
       -- Simple and easy statusline.
       local statusline = require 'mini.statusline'
       statusline.setup { use_icons = true }
@@ -919,6 +1094,7 @@ require('lazy').setup({
         'vim',
         'vimdoc',
         'php',
+        'python',
       },
       auto_install = true,
       highlight = {
@@ -935,6 +1111,49 @@ require('lazy').setup({
     icons = vim.g.have_nerd_font and {},
   },
 })
+
+--[[ Transparent Background ]]
+local function clear_bg(groups)
+  for _, name in ipairs(groups) do
+    local ok, hl = pcall(vim.api.nvim_get_hl, 0, { name = name, link = false })
+    if ok and hl then
+      hl.bg = nil
+      hl.ctermbg = nil
+      vim.api.nvim_set_hl(0, name, hl)
+    end
+  end
+end
+
+local transparent_groups = {
+  'Normal',
+  'NormalNC',
+  'NormalFloat',
+  'FloatBorder',
+  'StatusLine',
+  'StatusLineNC',
+  'SignColumn',
+  'Pmenu',
+  'PmenuSbar',
+  'PmenuSel',
+  'PmenuThumb',
+  'NeoTreeNormal',
+  'NeoTreeNormalNC',
+  'TelescopeNormal',
+  'TelescopeBorder',
+  'TelescopePromptNormal',
+  'WhichKeyFloat',
+  'WhichKeyBorder',
+  'NotifyBackground',
+}
+
+vim.api.nvim_create_autocmd('ColorScheme', {
+  pattern = '*',
+  callback = function()
+    clear_bg(transparent_groups)
+  end,
+})
+
+clear_bg(transparent_groups)
 
 -- The line beneath this is called `modeline`, it's basically like, a line at the end of the end (or start) of a file, that set ups some configuration for this specific file.
 -- for example: ts=2 => ts=4 → tabstop in 4 spaces
