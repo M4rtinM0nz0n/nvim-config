@@ -1,4 +1,3 @@
--- Ensure ~/.local/bin is on PATH (for pip-installed tools like jupyter-console)
 vim.env.PATH = vim.fn.expand('~/.local/bin') .. ':' .. vim.env.PATH
 
 vim.g.mapleader = ' '
@@ -250,7 +249,6 @@ vim.keymap.set('n', '<leader>caf', 'i const arrow = () => {}<Left>', { noremap =
 ---@type vim.Option
 local rtp = vim.opt.rtp
 rtp:prepend(lazypath)
-
 -- NOTE: install your plugins here dummy
 require('lazy').setup({
   'NMAC427/guess-indent.nvim',
@@ -605,7 +603,7 @@ require('lazy').setup({
     -- Main LSP Configuration
     'neovim/nvim-lspconfig',
     dependencies = {
-      { 'mason-org/mason.nvim', opts = {} },
+      { 'mason-org/mason.nvim', opts = { PATH = 'prepend' } },
       'mason-org/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
 
@@ -722,7 +720,52 @@ require('lazy').setup({
       local servers = {
         html = {},
         cssls = {},
-        emmet_ls = {},
+        emmet_ls = {
+          filetypes = { 'html', 'css', 'javascriptreact', 'typescriptreact', 'javascript', 'typescript', 'vue' },
+        },
+        vtsls = {
+          filetypes = { 'javascript', 'javascriptreact', 'typescript', 'typescriptreact', 'vue' },
+          settings = {
+            vtsls = {
+              tsserver = {
+                globalPlugins = {
+                  {
+                    name = '@vue/typescript-plugin',
+                    location = (function()
+                      local mason_pkg = vim.fn.stdpath('data') .. '/mason/packages/vue-language-server'
+                      return mason_pkg .. '/node_modules/@vue/language-server'
+                    end)(),
+                    languages = { 'vue' },
+                    configNamespace = 'typescript',
+                  },
+                },
+              },
+            },
+          },
+        },
+        vue_ls = {
+          init_options = {
+            typescript = {
+              tsdk = (function()
+                local mason = vim.fn.stdpath('data') ..
+                    '/mason/packages/typescript-language-server/node_modules/typescript/lib'
+                if vim.fn.isdirectory(mason) == 1 then return mason end
+                local h = io.popen('npm root -g 2>/dev/null')
+                if h then
+                  local g = h:read('*a'):gsub('%s+', '') .. '/typescript/lib'
+                  h:close()
+                  if vim.fn.isdirectory(g) == 1 then return g end
+                end
+                local root = vim.fs.root(vim.api.nvim_buf_get_name(0), 'node_modules/typescript/lib')
+                if root then
+                  local p = root .. '/node_modules/typescript/lib'
+                  if vim.fn.isdirectory(p) == 1 then return p end
+                end
+                return ''
+              end)(),
+            },
+          },
+        },
         intelephense = {},
         basedpyright = {
           settings = {
@@ -769,21 +812,29 @@ require('lazy').setup({
       }
 
       local ensure_installed = vim.tbl_keys(servers or {})
+      -- mason-tool-installer expects Mason package names, not lspconfig server names
+      local lspconfig_to_mason = {
+        html = 'html-lsp',
+        cssls = 'css-lsp',
+        emmet_ls = 'emmet-ls',
+        vtsls = 'vtsls',
+        vue_ls = "vue-language-server",
+        lua_ls = 'lua-language-server',
+        intelephense = 'intelephense',
+        basedpyright = 'basedpyright',
+      }
+      for i, name in ipairs(ensure_installed) do
+        ensure_installed[i] = lspconfig_to_mason[name] or name
+      end
       vim.list_extend(ensure_installed, {
-        'typescript-language-server',
-        'html',
-        'cssls',
-        'emmet_ls',
         'prettier',
         'eslint',
-        --'stylua',
-        'intelephense',
-        'basedpyright',
         'ruff',
         'debugpy',
       })
       require('mason-tool-installer').setup {
         ensure_installed = ensure_installed,
+        run_on_start = true,
       }
       require('mason-lspconfig').setup {
         ensure_installed = {},
@@ -801,7 +852,7 @@ require('lazy').setup({
 
   { -- Autoformat
     'stevearc/conform.nvim',
-    event = { 'BufWritePre' },
+    event = { 'BufReadPre', 'BufNewFile', 'BufWritePre' },
     cmd = { 'ConformInfo' },
     keys = {
       {
@@ -812,16 +863,22 @@ require('lazy').setup({
         mode = '',
         desc = '[F]ormat buffer',
       },
+      {
+        '<leader>ci',
+        '<cmd>ConformInfo<CR>',
+        mode = 'n',
+        desc = '[C]onform [I]nfo',
+      },
     },
     opts = {
-      notify_on_error = false,
+      notify_on_error = true,
       format_on_save = function(bufnr)
         local disable_filetypes = { c = true, cpp = true }
         if disable_filetypes[vim.bo[bufnr].filetype] then
           return nil
         else
           return {
-            timeout_ms = 500,
+            timeout_ms = 3000,
             lsp_format = 'fallback',
           }
         end
@@ -831,9 +888,39 @@ require('lazy').setup({
           --'stylua'
         },
         python = { 'ruff_format', 'ruff_organize_imports' },
+        javascript = { 'prettier' },
+        javascriptreact = { 'prettier' },
+        typescript = { 'prettier' },
+        typescriptreact = { 'prettier' },
+        json = { 'prettier' },
+        jsonc = { 'prettier' },
+        css = { 'prettier' },
+        html = { 'prettier' },
+        vue = { 'prettier' },
       },
 
       formatters = {
+        prettier = {
+          -- Prefer the project's local prettier when one exists
+          command = function(_, ctx)
+            local fname = vim.api.nvim_buf_get_name(ctx.buf)
+            local root = vim.fs.root(fname, { 'package.json', '.prettierrc' })
+            if root then
+              local local_prettier = root .. '/node_modules/.bin/prettier'
+              if vim.fn.executable(local_prettier) == 1 then
+                return local_prettier
+              end
+            end
+            return 'prettier'
+          end,
+          cwd = function(_, ctx)
+            local fname = vim.api.nvim_buf_get_name(ctx.buf)
+            local root = vim.fs.root(fname,
+              { '.prettierrc', '.prettierrc.json', '.prettierrc.yml', '.prettierrc.yaml', '.prettierrc.js',
+                '.prettierrc.cjs', 'prettier.config.js', 'prettier.config.cjs', 'package.json' })
+            return root or vim.fn.fnamemodify(fname, ':h')
+          end,
+        },
         -- stylua = {
         --   command = 'stylua',
         --   args = {
@@ -910,14 +997,17 @@ require('lazy').setup({
       })
 
       vim.keymap.set('n', '<leader>tr', function() neotest.run.run() end, { desc = '[T]est [R]un nearest' })
-      vim.keymap.set('n', '<leader>tf', function() neotest.run.run(vim.fn.expand('%')) end, { desc = '[T]est Run [F]ile' })
+      vim.keymap.set('n', '<leader>tf', function() neotest.run.run(vim.fn.expand('%')) end,
+        { desc = '[T]est Run [F]ile' })
       vim.keymap.set('n', '<leader>ts', function() neotest.summary.toggle() end, { desc = '[T]est [S]ummary toggle' })
-      vim.keymap.set('n', '<leader>to', function() neotest.output.open({ enter = true, auto_close = true }) end, { desc = '[T]est [O]utput' })
+      vim.keymap.set('n', '<leader>to', function() neotest.output.open({ enter = true, auto_close = true }) end,
+        { desc = '[T]est [O]utput' })
     end,
   },
 
   { -- Autocompletion
     'saghen/blink.cmp',
+    build = 'cargo build --release',
     event = 'VimEnter',
     version = '1.*',
     dependencies = {
@@ -1083,7 +1173,6 @@ require('lazy').setup({
     opts = {
       ensure_installed = {
         'bash',
-        'c',
         'diff',
         'html',
         'lua',
@@ -1095,6 +1184,12 @@ require('lazy').setup({
         'vimdoc',
         'php',
         'python',
+        'javascript',
+        'typescript',
+        'tsx',
+        'jsdoc',
+        'comment',
+        'vue',
       },
       auto_install = true,
       highlight = {
@@ -1112,48 +1207,67 @@ require('lazy').setup({
   },
 })
 
---[[ Transparent Background ]]
-local function clear_bg(groups)
-  for _, name in ipairs(groups) do
-    local ok, hl = pcall(vim.api.nvim_get_hl, 0, { name = name, link = false })
-    if ok and hl then
-      hl.bg = nil
-      hl.ctermbg = nil
-      vim.api.nvim_set_hl(0, name, hl)
-    end
-  end
-end
-
-local transparent_groups = {
-  'Normal',
-  'NormalNC',
-  'NormalFloat',
-  'FloatBorder',
-  'StatusLine',
-  'StatusLineNC',
-  'SignColumn',
-  'Pmenu',
-  'PmenuSbar',
-  'PmenuSel',
-  'PmenuThumb',
-  'NeoTreeNormal',
-  'NeoTreeNormalNC',
-  'TelescopeNormal',
-  'TelescopeBorder',
-  'TelescopePromptNormal',
-  'WhichKeyFloat',
-  'WhichKeyBorder',
-  'NotifyBackground',
-}
-
-vim.api.nvim_create_autocmd('ColorScheme', {
-  pattern = '*',
-  callback = function()
-    clear_bg(transparent_groups)
-  end,
+vim.lsp.config('vtsls', {
+  filetypes = { 'javascript', 'javascriptreact', 'typescript', 'typescriptreact', 'vue' },
+  settings = {
+    vtsls = {
+      tsserver = {
+        globalPlugins = {
+          {
+            name = '@vue/typescript-plugin',
+            location = vim.fn.stdpath('data') .. '/mason/packages/vue-language-server/node_modules/@vue/language-server',
+            languages = { 'vue' },
+            configNamespace = 'typescript',
+          },
+        },
+      },
+    },
+  },
 })
+vim.lsp.enable('vtsls')
 
-clear_bg(transparent_groups)
+--[[ Transparent Background ]]
+--local function clear_bg(groups)
+--  for _, name in ipairs(groups) do
+--    local ok, hl = pcall(vim.api.nvim_get_hl, 0, { name = name, link = false })
+--    if ok and hl then
+--      hl.bg = nil
+--      hl.ctermbg = nil
+--      vim.api.nvim_set_hl(0, name, hl)
+--    end
+--  end
+--end
+--
+--local transparent_groups = {
+--  'Normal',
+--  'NormalNC',
+--  'NormalFloat',
+--  'FloatBorder',
+--  'StatusLine',
+--  'StatusLineNC',
+--  'SignColumn',
+--  'Pmenu',
+--  'PmenuSbar',
+--  'PmenuSel',
+--  'PmenuThumb',
+--  'NeoTreeNormal',
+--  'NeoTreeNormalNC',
+--  'TelescopeNormal',
+--  'TelescopeBorder',
+--  'TelescopePromptNormal',
+--  'WhichKeyFloat',
+--  'WhichKeyBorder',
+--  'NotifyBackground',
+--}
+--
+--vim.api.nvim_create_autocmd('ColorScheme', {
+--  pattern = '*',
+--  callback = function()
+--    clear_bg(transparent_groups)
+--  end,
+--})
+--
+--clear_bg(transparent_groups)
 
 -- The line beneath this is called `modeline`, it's basically like, a line at the end of the end (or start) of a file, that set ups some configuration for this specific file.
 -- for example: ts=2 => ts=4 → tabstop in 4 spaces

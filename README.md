@@ -1,6 +1,6 @@
 # E-Vim
 
-A personalized Neovim configuration built on [lazy.nvim](https://github.com/folke/lazy.nvim), focused on Python, web development (HTML/CSS/JS), and ergonomic editing.
+A personalized Neovim configuration built on [lazy.nvim](https://github.com/folke/lazy.nvim), focused on Python, web development (HTML/CSS/JS), React (JSX/TSX), and ergonomic editing.
 
 ![Colorscheme](https://img.shields.io/badge/colorscheme-rose--pine--moon-blueviolet) ![Neovim](https://img.shields.io/badge/Neovim-0.10+-green)
 
@@ -203,6 +203,15 @@ Auto-format on save is enabled (except for C/C++).
 | --- | --- | --- |
 | `<C-c>` then `af` | Insert | Expand to `const arrow = () => {}` |
 | `<leader>caf` | Normal | Insert `const arrow = () => {}` |
+
+### React / JSX / TSX
+
+Full support for React, JSX, and TypeScript TSX files:
+
+- **Syntax & indent**: Treesitter parsers for `javascript` (includes JSX), `typescript`, and `tsx`
+- **LSP**: `ts_ls` (TypeScript language server) provides autocomplete, diagnostics, go-to-definition, references, etc.
+- **Emmet**: `emmet_ls` works in `html`, `css`, `javascript`, `typescript`, `javascriptreact`, and `typescriptreact`
+- **Formatting**: Prettier formats JS, TS, JSX, TSX, JSON, CSS, and HTML on save
 
 ## Plugins
 
